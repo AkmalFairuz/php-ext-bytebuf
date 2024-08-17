@@ -4,12 +4,15 @@
 #include "../bytebuf_arginfo.h"
 #include "ZendUtil.h"
 #include "Int24Util.h"
+#include "ByteBufException.h"
 #include <cstdint>
 
 extern "C" {
 #include "ext/spl/spl_exceptions.h"
 #include "Zend/zend_exceptions.h"
 }
+
+extern zend_class_entry* bytebuf_exception_ce;
 
 typedef struct {
     zend_object std;
@@ -57,7 +60,7 @@ LITTLE_ENDIAN_METHOD(__construct) {
         ZEND_PARSE_PARAMETERS_END(); \
         \
         if(ZSTR_LEN(value) != size) { \
-            zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Invalid length of string, expected %d", size); \
+            zend_throw_exception_ex(bytebuf_exception_ce, 0, "Invalid length of string, expected %d", size); \
             return; \
         } \
         \
@@ -101,7 +104,7 @@ LITTLE_ENDIAN_READ_WRITE_METHOD(UnsignedLong, uint64_t, 8)
         ZEND_PARSE_PARAMETERS_END(); \
         \
         if(ZSTR_LEN(value) != 3) { \
-            zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Invalid length of string, expected 3"); \
+            zend_throw_exception_ex(bytebuf_exception_ce, 0, "Invalid length of string, expected 3"); \
             return; \
         } \
         \
@@ -141,7 +144,7 @@ LITTLE_ENDIAN_READ_WRITE_TRIAD_METHOD(UnsignedTriad, uint32_t, uint24_to_bytes, 
         ZEND_PARSE_PARAMETERS_END(); \
         \
         if(ZSTR_LEN(value) != size) { \
-            zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Invalid length of string, expected %d", size); \
+            zend_throw_exception_ex(bytebuf_exception_ce, 0, "Invalid length of string, expected %d", size); \
             return; \
         } \
         \
