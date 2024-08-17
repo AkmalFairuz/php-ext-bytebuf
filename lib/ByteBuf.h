@@ -33,6 +33,7 @@ public:
     void setCapacity(size_t capacity);
     void increaseCapacity();
     void increaseCapacityMin(size_t minimum_capacity);
+    void increaseCapacityIfLessThan(size_t remaining_capacity);
     void setMaxCapacity(size_t maxCapacity);
     size_t getMaxCapacity();
 

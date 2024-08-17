@@ -522,7 +522,8 @@ BYTEBUF_READ_WRITE_BYTE(UnsignedByte, uint8_t)
         auto value2 = static_cast<type>(value); \
         size_t previousOffset = object->bytebuf->_offset; \
         try { \
-            VarInt::writeFunc(object->bytebuf->_buffer, object->bytebuf->_offset, value2); \
+            object->bytebuf->increaseCapacityIfLessThan(sizeof(type) + 2); \
+            VarInt::writeFunc(object->bytebuf->_buffer, object->bytebuf->_offset, value2, object->bytebuf->_capacity); \
             object->bytebuf->_usedBufferLength += object->bytebuf->_offset - previousOffset; \
         } catch (const ByteBufException& e) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
@@ -534,7 +535,7 @@ BYTEBUF_READ_WRITE_BYTE(UnsignedByte, uint8_t)
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
         type value; \
         try { \
-            VarInt::readFunc(object->bytebuf->_buffer, object->bytebuf->_offset, &value); \
+            VarInt::readFunc(object->bytebuf->_buffer, object->bytebuf->_offset, &value, object->bytebuf->getUsedBufferLength()); \
         } catch (const ByteBufException& e) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
             return; \

@@ -45,7 +45,7 @@ VAR_INT_METHOD(__construct) {
         auto value2 = static_cast<type>(value); \
         uint8_t retBuf[maxsize]; \
         size_t offset = 0; \
-        VarInt::write##name(retBuf, offset, value2); \
+        VarInt::write##name(retBuf, offset, value2, 12); \
         \
         RETURN_STRINGL(reinterpret_cast<char*>(retBuf), offset); \
     } \
@@ -62,7 +62,7 @@ VAR_INT_METHOD(__construct) {
         size_t offset = Z_LVAL_P(Z_REFVAL_P(offsetz)); \
         type retValue = 0; \
         try { \
-            VarInt::read##name(buffer, offset, &retValue); \
+            VarInt::read##name(buffer, offset, &retValue, ZSTR_LEN(bufferz)); \
         } catch (const ByteBufException& e) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
             return; \

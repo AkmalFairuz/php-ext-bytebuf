@@ -129,6 +129,11 @@ size_t ByteBuf::getUsedBufferLength() const {
     return this->_usedBufferLength;
 }
 
+void ByteBuf::increaseCapacityIfLessThan(const size_t remaining_capacity) {
+    if(this->_capacity - this->_offset < remaining_capacity) {
+        this->increaseCapacityMin(remaining_capacity);
+    }
+}
 
 void ByteBuf::free() {
     if(this->_buffer != nullptr) {
