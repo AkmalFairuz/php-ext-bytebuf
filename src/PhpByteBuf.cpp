@@ -124,6 +124,11 @@ PHP_BYTEBUF_METHOD(read) {
         RETURN_STR(zend_empty_string);
     }
 
+    if(length < 0){
+        zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Length must be positive");
+        return;
+    }
+
     auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis()));
 
     // Allocate using emalloc for better memory management. 
