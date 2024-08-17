@@ -38,7 +38,7 @@ VAR_INT_METHOD(__construct) {
 #define VAR_INT_READ_WRITE_METHOD(name, type, maxsize) \
     VAR_INT_METHOD(write##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
@@ -53,7 +53,7 @@ VAR_INT_METHOD(__construct) {
     VAR_INT_METHOD(read##name) { \
         zend_string *bufferz; \
         zval *offsetz; \
-        ZEND_PARSE_PARAMETERS_START(2, 2) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2) \
             Z_PARAM_STR(bufferz) \
             Z_PARAM_ZVAL(offsetz) \
         ZEND_PARSE_PARAMETERS_END(); \

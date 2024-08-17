@@ -56,7 +56,7 @@ static void bytebuf_free(zend_object* object) {
 PHP_BYTEBUF_METHOD(alloc) {
     zend_long capacity;
 
-    ZEND_PARSE_PARAMETERS_START(1, 1)
+    ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
         Z_PARAM_LONG(capacity)
     ZEND_PARSE_PARAMETERS_END();
 
@@ -70,7 +70,7 @@ PHP_BYTEBUF_METHOD(alloc) {
 PHP_BYTEBUF_METHOD(fromString) {
     zend_string* buf;
 
-    ZEND_PARSE_PARAMETERS_START(1, 1)
+    ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
         Z_PARAM_STR(buf)
     ZEND_PARSE_PARAMETERS_END();
 
@@ -85,7 +85,7 @@ PHP_BYTEBUF_METHOD(__construct) {
     zend_string* initialBuffer;
     zend_long offset;
 
-    ZEND_PARSE_PARAMETERS_START(2, 2)
+    ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
         Z_PARAM_STR(initialBuffer)
         Z_PARAM_LONG(offset)
     ZEND_PARSE_PARAMETERS_END();
@@ -104,12 +104,16 @@ PHP_BYTEBUF_METHOD(__construct) {
 PHP_BYTEBUF_METHOD(write) {
     zend_string* buf;
 
-    ZEND_PARSE_PARAMETERS_START(1, 1)
+    ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
         Z_PARAM_STR(buf)
     ZEND_PARSE_PARAMETERS_END();
 
     auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis()));
-    object->bytebuf->write(reinterpret_cast<uint8_t*>(ZSTR_VAL(buf)), ZSTR_LEN(buf));
+    try{
+        object->bytebuf->write(reinterpret_cast<uint8_t*>(ZSTR_VAL(buf)), ZSTR_LEN(buf));
+    }catch (const ByteBufException& e){
+        zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what());
+    }
 }
 
 /* ByteBuf::read(int $length) : string */
@@ -157,7 +161,7 @@ PHP_BYTEBUF_METHOD(read) {
 PHP_BYTEBUF_METHOD(setOffset) {
     zend_long offset;
 
-    ZEND_PARSE_PARAMETERS_START(1, 1)
+    ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
         Z_PARAM_LONG(offset)
     ZEND_PARSE_PARAMETERS_END();
 
@@ -235,7 +239,7 @@ PHP_BYTEBUF_METHOD(toString) {
 #define BYTEBUF_READ_WRITE_INT(name, type, size) \
     PHP_BYTEBUF_METHOD(write##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
@@ -269,7 +273,7 @@ PHP_BYTEBUF_METHOD(toString) {
     \
     PHP_BYTEBUF_METHOD(writeL##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
@@ -322,7 +326,7 @@ BYTEBUF_READ_WRITE_INT(UnsignedLong, uint64_t, 8)
 #define BYTEBUF_READ_WRITE_TRIAD(name, type, tobytesfunc, tointfunc) \
     PHP_BYTEBUF_METHOD(write##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
@@ -359,7 +363,7 @@ BYTEBUF_READ_WRITE_INT(UnsignedLong, uint64_t, 8)
     \
     PHP_BYTEBUF_METHOD(writeL##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
@@ -406,7 +410,7 @@ BYTEBUF_READ_WRITE_TRIAD(UnsignedTriad, uint32_t, uint24_to_bytes, bytes_to_uint
 #define BYTEBUF_READ_WRITE_FLOAT(name, type, size) \
     PHP_BYTEBUF_METHOD(write##name) { \
         double value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_DOUBLE(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
@@ -441,7 +445,7 @@ BYTEBUF_READ_WRITE_TRIAD(UnsignedTriad, uint32_t, uint24_to_bytes, bytes_to_uint
     \
     PHP_BYTEBUF_METHOD(writeL##name) { \
         double value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_DOUBLE(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
@@ -480,7 +484,7 @@ BYTEBUF_READ_WRITE_FLOAT(Double, double, 8)
 #define BYTEBUF_READ_WRITE_BYTE(name, type) \
     PHP_BYTEBUF_METHOD(write##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
@@ -511,7 +515,7 @@ BYTEBUF_READ_WRITE_BYTE(UnsignedByte, uint8_t)
 #define BYTEBUF_READ_WRITE_VARINT(name, type, writeFunc, readFunc) \
     PHP_BYTEBUF_METHOD(write##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \

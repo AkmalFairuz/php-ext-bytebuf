@@ -5,14 +5,14 @@
 void VarInt::writeUnsignedInt(uint8_t* buffer, size_t& offset, uint32_t value) {
     uint8_t a[5];
     int i = 0;
-    for (; i < 5; ++i) {
-        if ((value & ~0x7f) != 0) {
-            a[i] = static_cast<uint8_t>(value & 0x7f | 0x80);
+    while (i < 5) {
+        a[i] = (value & 0x7f);
+        if ((value >>= 7) != 0) {
+            a[i] |= 0x80;
         } else {
-            a[i] = static_cast<uint8_t>(value & 0x7f);
             break;
         }
-        value >>= 7;
+        ++i;
     }
     memcpy(buffer + offset, a, i + 1);
     offset += i + 1;
@@ -21,14 +21,14 @@ void VarInt::writeUnsignedInt(uint8_t* buffer, size_t& offset, uint32_t value) {
 void VarInt::writeUnsignedLong(uint8_t* buffer, size_t& offset, uint64_t value) {
     uint8_t a[10];
     int i = 0;
-    for (; i < 10; ++i) {
-        if ((value & ~0x7f) != 0) {
-            a[i] = static_cast<uint8_t>(value & 0x7f | 0x80);
+    while (i < 10) {
+        a[i] = (value & 0x7f);
+        if ((value >>= 7) != 0) {
+            a[i] |= 0x80;
         } else {
-            a[i] = static_cast<uint8_t>(value & 0x7f);
             break;
         }
-        value >>= 7;
+        ++i;
     }
     memcpy(buffer + offset, a, i + 1);
     offset += i + 1;

@@ -40,7 +40,7 @@ LITTLE_ENDIAN_METHOD(__construct) {
 #define LITTLE_ENDIAN_READ_WRITE_METHOD(name, type, size) \
     LITTLE_ENDIAN_METHOD(write##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
@@ -55,7 +55,7 @@ LITTLE_ENDIAN_METHOD(__construct) {
     \
     LITTLE_ENDIAN_METHOD(read##name) { \
         zend_string *value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_STR(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
@@ -83,7 +83,7 @@ LITTLE_ENDIAN_READ_WRITE_METHOD(UnsignedLong, uint64_t, 8)
 #define LITTLE_ENDIAN_READ_WRITE_TRIAD_METHOD(name, type, tobytesfunc, tointfunc) \
     LITTLE_ENDIAN_METHOD(write##name) { \
         zend_long value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_LONG(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
@@ -99,7 +99,7 @@ LITTLE_ENDIAN_READ_WRITE_METHOD(UnsignedLong, uint64_t, 8)
     \
     LITTLE_ENDIAN_METHOD(read##name) { \
         zend_string *value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_STR(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
@@ -124,7 +124,7 @@ LITTLE_ENDIAN_READ_WRITE_TRIAD_METHOD(UnsignedTriad, uint32_t, uint24_to_bytes, 
 #define LITTLE_ENDIAN_READ_WRITE_FLOAT_METHOD(name, type, size) \
     LITTLE_ENDIAN_METHOD(write##name) { \
         double value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_DOUBLE(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
@@ -139,7 +139,7 @@ LITTLE_ENDIAN_READ_WRITE_TRIAD_METHOD(UnsignedTriad, uint32_t, uint24_to_bytes, 
     \
     LITTLE_ENDIAN_METHOD(read##name) { \
         zend_string *value; \
-        ZEND_PARSE_PARAMETERS_START(1, 1) \
+        ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
             Z_PARAM_STR(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
