@@ -183,7 +183,10 @@ PHP_BYTEBUF_METHOD(remaining) {
     auto* buf = object->bytebuf->remaining();
     auto len = object->bytebuf->getUsedBufferLength() - object->bytebuf->getOffset();
 
-    RETURN_STRINGL(reinterpret_cast<char*>(buf), len);
+    zend_string* result = zend_string_init(reinterpret_cast<char*>(buf), len, 0);
+    delete[] buf;
+
+    RETURN_STR(result);
 }
 
 /* ByteBuf::toString() : string */
