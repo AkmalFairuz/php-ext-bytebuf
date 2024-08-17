@@ -1,6 +1,6 @@
 <?php
 
-namespace AkmalFairuz\ByteBuf;
+namespace AkmalFairuz\ByteBuf {
 
 class ByteBuf {
     public static function fromString(string $buffer): ByteBuf {}
@@ -185,4 +185,12 @@ class VarInt {
 
     public static function writeUnsignedLong(int $value): string {}
     public static function readUnsignedLong(string $buffer, int &$offset): int {}
+}
+
+}
+
+// TODO: since class_aliases with internal class won't work in PHP < 8.3 we need to add this manually
+// remove this when pocketmine require PHP >= 8.3
+namespace pocketmine\utils {
+    class BinaryDataException extends \RuntimeException {}
 }
