@@ -58,7 +58,12 @@ VAR_INT_METHOD(__construct) {
         auto buffer = reinterpret_cast<uint8_t*>(ZSTR_VAL(bufferz)); \
         size_t offset = Z_LVAL_P(Z_REFVAL_P(offsetz)); \
         type retValue = 0; \
-        VarInt::read##name(buffer, offset, &retValue); \
+        try { \
+            VarInt::read##name(buffer, offset, &retValue); \
+        } catch (const ByteBufException &e) { \
+            zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
+            return; \
+        } \
         ZEND_TRY_ASSIGN_REF_LONG(offsetz, offset); \
         \
         RETURN_LONG(retValue); \
