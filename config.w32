@@ -1,0 +1,9 @@
+ARG_ENABLE('bytebuf', 'bytebuf support', 'no');
+
+if (PHP_BYTEBUF != 'no') {
+	AC_DEFINE('HAVE_BYTEBUF', 1, 'bytebuf support enabled');
+
+	EXTENSION('bytebuf', 'bytebuf.cpp', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /std:c++17');
+	ADD_SOURCES(configure_module_dirname + '/lib', 'ByteBuf.cpp ByteFlipper.cpp VarInt.cpp', 'bytebuf');
+	ADD_SOURCES(configure_module_dirname + '/src', 'PhpByteBuf.cpp PhpBigEndian.cpp PhpLittleEndian.cpp Int24Util.cpp PhpVarInt.cpp', 'bytebuf');
+}
