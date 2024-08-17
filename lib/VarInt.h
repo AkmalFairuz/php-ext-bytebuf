@@ -2,6 +2,7 @@
 #define LIB_VARINT_H_
 
 #include <cstdint>
+#include <cstddef>
 
 class VarInt {
 public:
@@ -15,4 +16,4 @@ public:
     static void readLong(const uint8_t* buffer, size_t& offset, int64_t* out);
 };
 
-#endif //LIb_VARINT_H_
+#endif //LIB_VARINT_H_

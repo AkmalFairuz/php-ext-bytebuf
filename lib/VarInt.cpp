@@ -17,14 +17,6 @@ void VarInt::writeUnsignedInt(uint8_t* buffer, size_t& offset, uint32_t value) {
     offset += i + 1;
 }
 
-/* void VarInt::writeUnsignedInt(uint8_t* buffer, size_t& offset, uint32_t value) {
-    while (value >= 0x80) {
-        buffer[offset++] = static_cast<uint8_t>((value & 0x7F) | 0x80);
-        value >>= 7;
-    }
-    buffer[offset++] = static_cast<uint8_t>(value);
-} */
-
 void VarInt::writeUnsignedLong(uint8_t* buffer, size_t& offset, uint64_t value) {
     uint8_t a[10];
     int i = 0;
