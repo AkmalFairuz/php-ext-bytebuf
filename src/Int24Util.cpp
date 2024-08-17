@@ -12,6 +12,9 @@ void int24_to_bytes(int32_t value, uint8_t* buf) {
 
 void bytes_to_int24(const uint8_t* buf, int32_t* out) {
     *out = (buf[0] & 0xFF) | ((buf[1] & 0xFF) << 8) | ((buf[2] & 0xFF) << 16);
+    if (*out & 0x800000) {
+        *out |= 0xFF000000;
+    }
 }
 
 void uint24_to_bytes(uint32_t value, uint8_t* buf) {
