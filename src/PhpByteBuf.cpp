@@ -33,9 +33,12 @@ static zend_object* bytebuf_clone(zend_object* object) {
     auto* obj = fetch_from_zend_object<bytebuf_obj>(object);
     auto* new_obj = fetch_from_zend_object<bytebuf_obj>(bytebuf_new(obj->std.ce));
 
-    new_obj->bytebuf = ByteBuf::make(obj->bytebuf->toString(), obj->bytebuf->getUsedBufferLength());
+    auto* previousBuf = obj->bytebuf->toString();
+    new_obj->bytebuf = ByteBuf::make(previousBuf, obj->bytebuf->getUsedBufferLength());
     new_obj->bytebuf->setOffset(obj->bytebuf->getOffset());
     new_obj->bytebuf->setMaxCapacity(obj->bytebuf->getMaxCapacity());
+
+    delete[] previousBuf;
 
     return &new_obj->std;
 }
@@ -181,10 +184,9 @@ PHP_BYTEBUF_METHOD(remaining) {
 /* ByteBuf::toString() : string */
 PHP_BYTEBUF_METHOD(toString) {
     auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis()));
-    auto* buf = object->bytebuf->toString();
     auto len = object->bytebuf->getUsedBufferLength();
 
-    RETURN_STRINGL(reinterpret_cast<char*>(buf), len);
+    RETURN_STRINGL(reinterpret_cast<char*>(object->bytebuf->_buffer), len);
 }
 
 /*
