@@ -3,6 +3,7 @@
 #include "ZendUtil.h"
 #include "../lib/VarInt.h"
 #include <cstdint>
+#include "../lib/ByteBufException.h"
 
 extern "C" {
 #include "ext/spl/spl_exceptions.h"
@@ -12,6 +13,8 @@ extern "C" {
 typedef struct {
     zend_object std;
 } var_int_obj;
+
+extern zend_class_entry* bytebuf_exception_ce;
 
 zend_class_entry *var_int_ce;
 static zend_object_handlers var_int_handlers;
@@ -60,7 +63,7 @@ VAR_INT_METHOD(__construct) {
         type retValue = 0; \
         try { \
             VarInt::read##name(buffer, offset, &retValue); \
-        } catch (const ByteBufException &e) { \
+        } catch (const ByteBufException& e) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
             return; \
         } \
