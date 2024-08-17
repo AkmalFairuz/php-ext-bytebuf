@@ -1,5 +1,6 @@
 #include "VarInt.h"
 #include "ByteBufException.h"
+#include <cstring>
 
 void VarInt::writeUnsignedInt(uint8_t* buffer, size_t& offset, uint32_t value) {
     uint8_t a[5];
