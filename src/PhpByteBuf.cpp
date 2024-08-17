@@ -550,8 +550,8 @@ void register_bytebuf_class() {
     bytebuf_handlers.clone_obj = bytebuf_clone;
 
     zend_class_entry ce;
+    ce.ce_flags |= ZEND_ACC_FINAL | ZEND_ACC_NO_DYNAMIC_PROPERTIES;
     INIT_CLASS_ENTRY(ce, "AkmalFairuz\\ByteBuf\\ByteBuf", bytebuf_methods);
     ce.create_object = bytebuf_new;
     bytebuf_entry = zend_register_internal_class(&ce);
-    bytebuf_entry->ce_flags |= ZEND_ACC_FINAL;
 }

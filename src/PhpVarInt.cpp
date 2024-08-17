@@ -79,6 +79,7 @@ VAR_INT_READ_WRITE_METHOD(UnsignedLong, uint64_t, 10)
 
 void register_var_int_class() {
     zend_class_entry ce;
+    ce.ce_flags |= ZEND_ACC_FINAL | ZEND_ACC_NO_DYNAMIC_PROPERTIES;
     INIT_CLASS_ENTRY(ce, "AkmalFairuz\\ByteBuf\\VarInt", var_int_methods);
     var_int_ce = zend_register_internal_class(&ce);
     var_int_ce->create_object = var_int_new;

@@ -160,6 +160,7 @@ BIG_ENDIAN_READ_WRITE_FLOAT_METHOD(Double, double, 8)
 
 void register_big_endian_class() {
     zend_class_entry ce;
+    ce.ce_flags |= ZEND_ACC_FINAL | ZEND_ACC_NO_DYNAMIC_PROPERTIES;
     INIT_CLASS_ENTRY(ce, "AkmalFairuz\\ByteBuf\\BE", be_methods);
     big_endian_ce = zend_register_internal_class(&ce);
     big_endian_ce->create_object = big_endian_new;
