@@ -1,6 +1,7 @@
 #ifndef LIB_BYTEFLIPPER_H_
 #define LIB_BYTEFLIPPER_H_
 #include <cstdint>
+#include <cstddef>
 
 class ByteFlipper {
 public:
