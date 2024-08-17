@@ -59,7 +59,7 @@ BIG_ENDIAN_METHOD(__construct) {
             Z_PARAM_STR(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
-        if(ZSTR_LEN(value) != size) { \
+        if(ZSTR_LEN(value) < size) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, "Invalid length of string, expected %d", size); \
             return; \
         } \
@@ -104,7 +104,7 @@ BIG_ENDIAN_READ_WRITE_METHOD(UnsignedLong, uint64_t, 8)
             Z_PARAM_STR(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
-        if(ZSTR_LEN(value) != 3) { \
+        if(ZSTR_LEN(value) < 3) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, "Invalid length of string, expected 3"); \
             return; \
         } \
@@ -144,7 +144,7 @@ BIG_ENDIAN_READ_WRITE_TRIAD_METHOD(UnsignedTriad, uint32_t, uint24_to_bytes, byt
             Z_PARAM_STR(value) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
-        if(ZSTR_LEN(value) != size) { \
+        if(ZSTR_LEN(value) < size) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, "Invalid length of string, expected %d", size); \
             return; \
         } \
