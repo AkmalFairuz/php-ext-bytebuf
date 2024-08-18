@@ -144,6 +144,92 @@ void ByteBuf::free() {
     this->_offset = 0;
 }
 
+void ByteBuf::writeUnsignedVarInt(const uint32_t value) {
+    uint8_t a[5];
+    uint32_t temp = value;
+    for (int i = 0; i < 5; ++i) {
+        if ((temp & ~0x7f) != 0) {
+            a[i] = static_cast<uint8_t>(temp & 0x7f | 0x80);
+        } else {
+            a[i] = static_cast<uint8_t>(temp & 0x7f);
+            this->write(a, i + 1);
+            return;
+        }
+        temp >>= 7;
+    }
+    throw ByteBufException("This should never happen");
+}
+
+void ByteBuf::writeUnsignedVarLong(const uint64_t value) {
+    uint8_t a[10];
+    uint64_t temp = value;
+    for (int i = 0; i < 10; ++i) {
+        if ((temp & ~0x7f) != 0) {
+            a[i] = static_cast<uint8_t>(temp & 0x7f | 0x80);
+        } else {
+            a[i] = static_cast<uint8_t>(temp & 0x7f);
+            this->write(a, i + 1);
+            return;
+        }
+        temp >>= 7;
+    }
+    throw ByteBufException("This should never happen");
+}
+
+void ByteBuf::readUnsignedVarInt(uint32_t* out) {
+    uint32_t value = 0;
+    for (int i = 0; i <= 28; i += 7) {
+        if(this->_offset >= this->_usedBufferLength) {
+            throw ByteBufException("Buffer read out of bounds");
+        }
+        const uint8_t b = this->_buffer[this->_offset++];
+        value |= (b & 0x7f) << i;
+        if ((b & 0x80) == 0) {
+            *out = value;
+            return;
+        }
+    }
+    throw ByteBufException("VarInt did not terminate after 5 bytes!");
+}
+
+void ByteBuf::readUnsignedVarLong(uint64_t* out) {
+    uint64_t value = 0;
+    for (int i = 0; i <= 63; i += 7) {
+        if(this->_offset >= this->_usedBufferLength) {
+            throw ByteBufException("Buffer read out of bounds");
+        }
+        const uint8_t b = this->_buffer[this->_offset++];
+        value |= (b & 0x7f) << i;
+        if ((b & 0x80) == 0) {
+            *out = value;
+            return;
+        }
+    }
+    throw ByteBufException("VarLong did not terminate after 10 bytes!");
+}
+
+void ByteBuf::writeVarInt(const int32_t value) {
+    auto value2 = static_cast<uint32_t>(value);
+    this->writeUnsignedVarInt((value2 << 1) ^ (value2 >> 31));
+}
+
+void ByteBuf::writeVarLong(const int64_t value) {
+    auto value2 = static_cast<uint64_t>(value);
+    this->writeUnsignedVarLong((value2 << 1) ^ (value2 >> 63));
+}
+
+void ByteBuf::readVarInt(int32_t* out) {
+    uint32_t value;
+    this->readUnsignedVarInt(&value);
+    *out = static_cast<int32_t>((value >> 1) ^ -(value & 1));
+}
+
+void ByteBuf::readVarLong(int64_t* out) {
+    uint64_t value;
+    this->readUnsignedVarLong(&value);
+    *out = static_cast<int64_t>((value >> 1) ^ -(value & 1));
+}
+
 ByteBuf::~ByteBuf() {
     this->free();
 }

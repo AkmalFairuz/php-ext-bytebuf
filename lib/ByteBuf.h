@@ -23,6 +23,16 @@ public:
     void read(uint8_t &out);
     void read(uint8_t* out, size_t len);
 
+    // VarInts
+    void writeUnsignedVarInt(uint32_t value);
+    void writeUnsignedVarLong(uint64_t value);
+    void readUnsignedVarInt(uint32_t* out);
+    void readUnsignedVarLong(uint64_t* out);
+    void writeVarInt(int32_t value);
+    void writeVarLong(int64_t value);
+    void readVarInt(int32_t* out);
+    void readVarLong(int64_t* out);
+
     uint8_t* remaining();
 
     [[nodiscard]] uint8_t* toString() const;

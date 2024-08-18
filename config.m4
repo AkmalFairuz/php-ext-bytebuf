@@ -79,7 +79,7 @@ if test "$PHP_BYTEBUF" != "no"; then
 
   AC_DEFINE(HAVE_BYTEBUF, 1, [ Have bytebuf support ])
 
-  PHP_NEW_EXTENSION(bytebuf, bytebuf.cpp lib/ByteBuf.cpp lib/ByteFlipper.cpp lib/VarInt.cpp src/PhpByteBuf.cpp src/PhpBigEndian.cpp src/PhpLittleEndian.cpp src/Int24Util.cpp src/PhpVarInt.cpp, $ext_shared,,-std=c++17, yes)
+  PHP_NEW_EXTENSION(bytebuf, bytebuf.cpp lib/ByteBuf.cpp lib/ByteFlipper.cpp src/PhpByteBuf.cpp src/PhpBigEndian.cpp src/PhpLittleEndian.cpp src/Int24Util.cpp src/PhpVarInt.cpp, $ext_shared,,-std=c++17, yes)
   PHP_ADD_BUILD_DIR($ext_builddir/lib, 1)
   PHP_ADD_BUILD_DIR($ext_builddir/src, 1)
   dnl PHP_ADD_INCLUDE($ext_builddir)

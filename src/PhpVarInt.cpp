@@ -1,7 +1,6 @@
 #include "PhpVarInt.h"
 #include "../bytebuf_arginfo.h"
 #include "ZendUtil.h"
-#include "../lib/VarInt.h"
 #include <cstdint>
 #include "../lib/ByteBufException.h"
 
@@ -35,47 +34,93 @@ VAR_INT_METHOD(__construct) {
     // NOTHING
 }
 
-#define VAR_INT_READ_WRITE_METHOD(name, type, maxsize) \
+int32_t VarIntDecodeZigZag32(uint32_t n) {
+	return (n >> 1) ^ -(n & 1);
+}
+
+int64_t VarIntDecodeZigZag64(uint64_t n) {
+	return (n >> 1) ^ -(n & 1);
+}
+
+uint32_t VarIntEncodeZigZag32(int32_t n) {
+	return (n << 1) ^ (n >> 31);
+}
+
+uint64_t VarIntEncodeZigZag64(int64_t n) {
+	return (n << 1) ^ (n >> 63);
+}
+
+#define VAR_INT_READ_WRITE_METHOD(name, type, maxsize, signed, maxloop) \
     VAR_INT_METHOD(write##name) { \
-        zend_long value; \
+        zend_long zvalue; \
+        \
         ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
-            Z_PARAM_LONG(value) \
+            Z_PARAM_LONG(zvalue) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
-        auto value2 = static_cast<type>(value); \
-        uint8_t retBuf[maxsize]; \
-        size_t offset = 0; \
-        VarInt::write##name(retBuf, offset, value2, 12); \
+        type raw = static_cast<type>(zvalue); \
+        if constexpr(signed) { \
+            if constexpr(maxsize == 5) { \
+                raw = VarIntEncodeZigZag32(raw); \
+            } else { \
+                raw = VarIntEncodeZigZag64(raw); \
+            } \
+        } \
         \
-        RETURN_STRINGL(reinterpret_cast<char*>(retBuf), offset); \
+        uint8_t a[maxsize]; \
+        type temp = raw; \
+        for (int i = 0; i < maxsize; ++i) { \
+            if ((temp & ~0x7f) != 0) { \
+                a[i] = static_cast<uint8_t>(temp & 0x7f | 0x80); \
+            } else { \
+                a[i] = static_cast<uint8_t>(temp & 0x7f); \
+                RETURN_STRINGL(reinterpret_cast<char*>(a), i + 1); \
+            } \
+            temp >>= 7; \
+        } \
+        zend_throw_exception_ex(bytebuf_exception_ce, 0, "This should never happen"); \
     } \
     \
     VAR_INT_METHOD(read##name) { \
-        zend_string *bufferz; \
-        zval *offsetz; \
+        zend_string* zdata; \
+        zval* zoffset = NULL; \
+        \
         ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2) \
-            Z_PARAM_STR(bufferz) \
-            Z_PARAM_ZVAL(offsetz) \
+            Z_PARAM_STR(zdata) \
+            Z_PARAM_ZVAL(zoffset) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
-        auto buffer = reinterpret_cast<uint8_t*>(ZSTR_VAL(bufferz)); \
-        size_t offset = Z_LVAL_P(Z_REFVAL_P(offsetz)); \
-        type retValue = 0; \
-        try { \
-            VarInt::read##name(buffer, offset, &retValue, ZSTR_LEN(bufferz)); \
-        } catch (const ByteBufException& e) { \
-            zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
-            return; \
+        uint8_t* data = reinterpret_cast<uint8_t*>(ZSTR_VAL(zdata)); \
+        size_t data_len = ZSTR_LEN(zdata); \
+        zend_long offsetLval = Z_LVAL_P(Z_REFVAL_P(zoffset)); \
+        size_t offset = static_cast<size_t>(offsetLval); \
+        type value = 0; \
+        for (int i = 0; i <= maxloop; i += 7) { \
+            if(offset >= data_len) { \
+                zend_throw_exception_ex(bytebuf_exception_ce, 0, "No bytes left in buffer"); \
+                return; \
+            } \
+            const uint8_t b = data[offset++]; \
+            value |= (b & 0x7f) << i; \
+            if ((b & 0x80) == 0) { \
+                ZEND_TRY_ASSIGN_REF_LONG(zoffset, offset); \
+                if constexpr(signed) { \
+                    if constexpr(maxsize == 5) { \
+                        RETURN_LONG(VarIntDecodeZigZag32(value)); \
+                    } else { \
+                        RETURN_LONG(VarIntDecodeZigZag64(value)); \
+                    } \
+                } \
+                RETURN_LONG(value); \
+            } \
         } \
-        ZEND_TRY_ASSIGN_REF_LONG(offsetz, offset); \
-        \
-        RETURN_LONG(retValue); \
+        zend_throw_exception_ex(bytebuf_exception_ce, 0, "VarInt did not terminate after %d bytes!", maxsize); \
     }
 
-VAR_INT_READ_WRITE_METHOD(Int, int32_t, 5)
-VAR_INT_READ_WRITE_METHOD(Long, int64_t, 10)
-VAR_INT_READ_WRITE_METHOD(UnsignedInt, uint32_t, 5)
-VAR_INT_READ_WRITE_METHOD(UnsignedLong, uint64_t, 10)
+VAR_INT_READ_WRITE_METHOD(Int, uint32_t, 5, true, 28)
+VAR_INT_READ_WRITE_METHOD(Long, uint64_t, 10, true, 63)
+VAR_INT_READ_WRITE_METHOD(UnsignedInt, uint32_t, 5, false, 28)
+VAR_INT_READ_WRITE_METHOD(UnsignedLong, uint64_t, 10, false, 63)
 
 void register_var_int_class() {
     zend_class_entry ce;

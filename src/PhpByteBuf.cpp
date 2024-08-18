@@ -4,7 +4,6 @@
 #include "../bytebuf_arginfo.h"
 #include "../lib/ByteOrder.h"
 #include "../lib/ByteFlipper.h"
-#include "../lib/VarInt.h"
 #include "Int24Util.h"
 
 extern "C" {
@@ -512,7 +511,7 @@ BYTEBUF_READ_WRITE_FLOAT(Double, double, 8)
 BYTEBUF_READ_WRITE_BYTE(Byte, int8_t)
 BYTEBUF_READ_WRITE_BYTE(UnsignedByte, uint8_t)
 
-#define BYTEBUF_READ_WRITE_VARINT(name, type, writeFunc, readFunc) \
+#define BYTEBUF_READ_WRITE_VARINT(name, type) \
     PHP_BYTEBUF_METHOD(write##name) { \
         zend_long value; \
         ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1) \
@@ -520,11 +519,8 @@ BYTEBUF_READ_WRITE_BYTE(UnsignedByte, uint8_t)
         ZEND_PARSE_PARAMETERS_END(); \
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
         auto value2 = static_cast<type>(value); \
-        size_t previousOffset = object->bytebuf->_offset; \
         try { \
-            object->bytebuf->increaseCapacityIfLessThan(sizeof(type) + 2); \
-            VarInt::writeFunc(object->bytebuf->_buffer, object->bytebuf->_offset, value2, object->bytebuf->_capacity); \
-            object->bytebuf->_usedBufferLength += object->bytebuf->_offset - previousOffset; \
+            object->bytebuf->write##name(value2); \
         } catch (const ByteBufException& e) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
             return; \
@@ -535,7 +531,7 @@ BYTEBUF_READ_WRITE_BYTE(UnsignedByte, uint8_t)
         auto object = fetch_from_zend_object<bytebuf_obj>(Z_OBJ_P(getThis())); \
         type value; \
         try { \
-            VarInt::readFunc(object->bytebuf->_buffer, object->bytebuf->_offset, &value, object->bytebuf->getUsedBufferLength()); \
+            object->bytebuf->read##name(&value); \
         } catch (const ByteBufException& e) { \
             zend_throw_exception_ex(bytebuf_exception_ce, 0, e.what()); \
             return; \
@@ -543,10 +539,10 @@ BYTEBUF_READ_WRITE_BYTE(UnsignedByte, uint8_t)
         RETURN_LONG(value); \
     }
 
-BYTEBUF_READ_WRITE_VARINT(UnsignedVarInt, uint32_t, writeUnsignedInt, readUnsignedInt)
-BYTEBUF_READ_WRITE_VARINT(UnsignedVarLong, uint64_t, writeUnsignedLong, readUnsignedLong)
-BYTEBUF_READ_WRITE_VARINT(VarInt, int32_t, writeInt, readInt)
-BYTEBUF_READ_WRITE_VARINT(VarLong, int64_t, writeLong, readLong)
+BYTEBUF_READ_WRITE_VARINT(UnsignedVarInt, uint32_t)
+BYTEBUF_READ_WRITE_VARINT(UnsignedVarLong, uint64_t)
+BYTEBUF_READ_WRITE_VARINT(VarInt, int32_t)
+BYTEBUF_READ_WRITE_VARINT(VarLong, int64_t)
 
 void register_bytebuf_class() {
     memcpy(&bytebuf_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
