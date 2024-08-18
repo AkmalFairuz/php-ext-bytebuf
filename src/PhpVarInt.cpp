@@ -58,23 +58,23 @@ uint64_t VarIntEncodeZigZag64(int64_t n) {
             Z_PARAM_LONG(zvalue) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
-        type raw = static_cast<type>(zvalue); \
-        if constexpr(signed) { \
-            if constexpr(maxsize == 5) { \
+        type raw = (type)zvalue; \
+        if (signed) { \
+            if (maxsize == 5) { \
                 raw = VarIntEncodeZigZag32(raw); \
             } else { \
                 raw = VarIntEncodeZigZag64(raw); \
             } \
         } \
         \
-        uint8_t a[maxsize]; \
+        char a[maxsize]; \
         type temp = raw; \
         for (int i = 0; i < maxsize; ++i) { \
             if ((temp & ~0x7f) != 0) { \
-                a[i] = static_cast<uint8_t>(temp & 0x7f | 0x80); \
+                a[i] = (temp & 0x7f) | 0x80; \
             } else { \
-                a[i] = static_cast<uint8_t>(temp & 0x7f); \
-                RETURN_STRINGL(reinterpret_cast<char*>(a), i + 1); \
+                a[i] = temp & 0x7f; \
+                RETURN_STRINGL(a, i + 1); \
             } \
             temp >>= 7; \
         } \
@@ -90,22 +90,22 @@ uint64_t VarIntEncodeZigZag64(int64_t n) {
             Z_PARAM_ZVAL(zoffset) \
         ZEND_PARSE_PARAMETERS_END(); \
         \
-        uint8_t* data = reinterpret_cast<uint8_t*>(ZSTR_VAL(zdata)); \
-        size_t data_len = ZSTR_LEN(zdata); \
+        char* data = ZSTR_VAL(zdata); \
+        size_t data_len = (size_t)ZSTR_LEN(zdata); \
         zend_long offsetLval = Z_LVAL_P(Z_REFVAL_P(zoffset)); \
-        size_t offset = static_cast<size_t>(offsetLval); \
+        size_t offset = (size_t)offsetLval; \
         type value = 0; \
         for (int i = 0; i <= maxloop; i += 7) { \
             if(offset >= data_len) { \
                 zend_throw_exception_ex(bytebuf_exception_ce, 0, "No bytes left in buffer"); \
                 return; \
             } \
-            const uint8_t b = data[offset++]; \
-            value |= (b & 0x7f) << i; \
+            unsigned char b = data[offset++]; \
+            value |= ((b & 0x7f) << i); \
             if ((b & 0x80) == 0) { \
                 ZEND_TRY_ASSIGN_REF_LONG(zoffset, offset); \
-                if constexpr(signed) { \
-                    if constexpr(maxsize == 5) { \
+                if (signed) { \
+                    if (maxsize == 5) { \
                         RETURN_LONG(VarIntDecodeZigZag32(value)); \
                     } else { \
                         RETURN_LONG(VarIntDecodeZigZag64(value)); \
